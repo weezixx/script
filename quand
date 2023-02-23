@@ -1,0 +1,75 @@
+from datetime import datetime
+import sys
+import os
+
+moment = "/home/misterwhy/Projets/polarprint/moment.txt"
+
+dico = {}
+final = {}
+
+key_list = ["titre","temps"]
+
+reponse = ""
+
+
+if len(sys.argv) > 1 and sys.argv[1] == "--help" :
+    print("quand titre jour mois année")
+
+if len(sys.argv) == 1 :
+
+    moment = open(moment,"r")
+
+    now = datetime.now()
+
+    dt_string = now.strftime("%d/%m/%Y")
+
+    resultat = []
+
+    liste_positif = []
+
+    for i in moment.readlines():
+        titre = i.split(" ")[0]
+        jour = int(i.split(" ")[1])
+        mois = int(i.split(" ")[2])
+        annee = int(i.split(" ")[3])
+
+        reste = datetime(annee,mois,jour) - now
+
+        if reste.days > 0:
+            liste_positif.append(titre + " " + str(jour) + " "+ str(mois) +" "+ str(annee) +"\n")
+
+        if reste.days < 0 and reponse == "":
+            reponse = 1
+
+        dico[i.split(" ")[0]] = reste.days
+        final.update(dico)
+
+
+    final = sorted(final.items(),key=lambda t:t[1])
+
+    for i in final:
+        print(str(i[0]) + " " + str(i[1]) + " jour(s)")
+
+    if reponse == 1:
+        suppression = input("\n Table rase du passé ? (o) ")
+        if suppression == "o":
+            with open("/home/misterwhy/Projets/polarprint/moment2.txt","w") as moment_2:
+                for i in liste_positif:
+                    moment_2.write(i)
+            os.remove("/home/misterwhy/Projets/polarprint/moment.txt")
+            os.rename("/home/misterwhy/Projets/polarprint/moment2.txt", "/home/misterwhy/Projets/polarprint/moment.txt")
+
+    moment.close()
+
+
+elif len(sys.argv) > 2 and not sys.argv[1] == "r":
+    moment = open(moment,"a")
+    titre = sys.argv[1]
+    jour = sys.argv[2]
+    mois = sys.argv[3]
+    annee = sys.argv[4]
+    
+    if int(annee) < 2000:
+        annee = int(annee)
+        annee += 2000
+    moment.write(titre + " " + jour + " "+ mois +" "+ str(annee) +"\n")
